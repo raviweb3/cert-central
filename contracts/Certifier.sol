@@ -57,6 +57,10 @@ contract Certifier is CertDatabaseModel {
         certifierDb.updateCourseStatus(_courseId,_status);
     }
 
+    function getCourses(address _certifier) external view returns(Course[] memory){
+        return commonDb.getCertifierCourses(_certifier);
+    }
+
     function issueProfileNFT(address _profile, string memory _tokenUri) external {
        uint256 tokeId = profileNFT.certify(_profile, _tokenUri);
        certifierDb.updateProfileTokenId(_profile,tokeId);

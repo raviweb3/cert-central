@@ -62,7 +62,9 @@ describe("Admin", function () {
       console.log(await certAdmin.isVerifierRole(verifier1Acc.address));
       console.log(await certAdmin.connect(verifier1Acc).verifyCertifier(certifier1Acc.address));
       certifier.connect(certifier1Acc).registerCourse("Blockchain training","complete training","www.abclabs.com/blockchain",
-                                     ['Solidity','Javascript'],0,0,0);      
+                                     ['Solidity','Javascript'],0,0,0);   
+                                     
+      console.log(await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address));                               
      });
   });
 });
