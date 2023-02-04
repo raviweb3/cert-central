@@ -6,6 +6,7 @@ import "./CertDatabaseModel.sol";
 
 interface IAdminDB is CertDatabaseModel {
     function getOwner() external returns(address);
+    function isVerifierRole(address _verifier) external returns(bool);
     function addVerifier(address _verifier) external;
     function removeVerifier(address _verifier) external;
     function verifyCertifier(address _certifier) external;

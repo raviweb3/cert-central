@@ -18,6 +18,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
 
     // Certifiers
     mapping(address => bool) public s_addressToVerifier;
+    address[] public s_verifiers;
     // Certifiers
     mapping(address => Certifier) public s_addressToCertifier;
     Certifier[] public s_certifiers;
@@ -50,16 +51,16 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     Counters.Counter public s_certificateIds;
 
     modifier isOwner(){
-        console.log("in is owner call");
-        console.log(s_owner);
-        console.log(msg.sender);
-
-        require(s_owner==msg.sender,"You must be a owner");
+        require(s_owner==tx.origin,"You must be a owner");
         _;
     }
     
     modifier isVerifier(){
-        require(s_addressToVerifier[msg.sender],"You must be a verifier");
+       // console.log(s_verifiers[0]);
+         console.log("in is verifier");
+         console.log(tx.origin);
+        console.log(s_addressToVerifier[tx.origin]);
+        require(s_addressToVerifier[tx.origin],"You must be a verifier");
         _;
     }
 
@@ -68,7 +69,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     }
 
     modifier isVerifiedCertifer(){
-        require(s_addressToCertifier[msg.sender].kycStatus==KycStatus.Verified,"You must be a verified certifier");
+        require(s_addressToCertifier[tx.origin].kycStatus==KycStatus.Verified,"You must be a verified certifier");
         _;
     }
 
@@ -77,7 +78,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     }
 
     modifier isVerifiedProfile(){
-        require(s_addressToProfile[msg.sender].kycStatus==KycStatus.Verified,"You must be a verified profile");
+        require(s_addressToProfile[tx.origin].kycStatus==KycStatus.Verified,"You must be a verified profile");
         _;
     }
 
@@ -89,9 +90,18 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
        return s_owner;
     }
   
+    function isVerifierRole(address _verifier) external view returns(bool){
+        bool flag = s_addressToVerifier[_verifier];
+        return flag;
+    }
+
     /* Admin */
     function addVerifier(address _verifier) external isOwner {
+        console.log("in add verifier");
+        console.log(_verifier);
         s_addressToVerifier[_verifier] = true;
+        s_verifiers.push(_verifier);
+        console.log(s_addressToVerifier[_verifier]);
     }
 
     function removeVerifier(address _verifier) external isOwner {
@@ -100,37 +110,39 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
 
 
     function verifyCertifier(address _certifier) external isVerifier {
+        console.log("in verifyCertifier");
+
         Certifier storage certifier = s_addressToCertifier[_certifier];
-        certifier.verifier = msg.sender;
+        certifier.verifier = tx.origin;
         certifier.kycStatus = KycStatus.Verified;
     }
 
     function updateCertifierTokenId(address _certifier, uint256 _tokenId) external isVerifier {
         Certifier storage certifier = s_addressToCertifier[_certifier];
         require(certifier.kycStatus==KycStatus.Verified,"Only KYC verified certifier");
-        require(certifier.verifier==msg.sender,"Only verifier who processed KYC");
+        require(certifier.verifier==tx.origin,"Only verifier who processed KYC");
         certifier.tokenId = _tokenId;
     }
 
     /* Certifier */
     function addCertifier(string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external {
-        Certifier memory certifier = s_addressToCertifier[msg.sender];
+        Certifier storage certifier = s_addressToCertifier[tx.origin];
         certifier.name = _name;
         certifier.entityType = _entityType;
         certifier.domain = _domain;
         certifier.detailsUri = _detailsUri;
-        certifier.owner = msg.sender;
+        certifier.owner = tx.origin;
         certifier.kycStatus = KycStatus.Submitted;
 
-        s_addressToCertifier[msg.sender] = certifier;
+        s_addressToCertifier[tx.origin] = certifier;
     }
 
     function addCourse(string memory _name,string memory _description,string memory _detailsUri, 
                   string[] memory _skills,uint256 _fee,uint256 _startedOn,uint256 _completedOn) external isVerifiedCertifer{
         uint256 courseId = s_courseIds.current();
-        Course memory course =  Course(courseId,msg.sender, _name,_description, _detailsUri,_skills,_fee,_startedOn,_completedOn,CourseStatus.Created);
+        Course memory course =  Course(courseId,tx.origin, _name,_description, _detailsUri,_skills,_fee,_startedOn,_completedOn,CourseStatus.Created);
         s_idToCourse[courseId] = course;
-        s_certifierToCourses[msg.sender].push(course);
+        s_certifierToCourses[tx.origin].push(course);
         s_courseIds.increment();
     }
 
@@ -161,14 +173,14 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
 
     function verifyProfile(address _profile) external isVerifiedCertifer{
         Profile storage profile = s_addressToProfile[_profile];
-        profile.verifier = msg.sender;
+        profile.verifier = tx.origin;
         profile.kycStatus = KycStatus.Verified;
     }
 
     function updateProfileTokenId(address _profile, uint256 _tokenId) external isVerifiedCertifer {
         Profile storage profile = s_addressToProfile[_profile];
         require(profile.kycStatus==KycStatus.Verified,"Only KYC verified certifier");
-        require(profile.verifier==msg.sender,"Only verifier who processed KYC");
+        require(profile.verifier==tx.origin,"Only verifier who processed KYC");
         profile.tokenId = _tokenId;
     }
 
@@ -183,16 +195,16 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
             
     /* Profle */    
     function addProfile(string memory _name, string memory _email,string memory _detailsUri) external{
-        Profile memory profile = s_addressToProfile[msg.sender];
+        Profile memory profile = s_addressToProfile[tx.origin];
         profile.name = _name;
         profile.email = _email;
         profile.detailsUri = _detailsUri;
         profile.kycStatus = KycStatus.Submitted;
-        s_addressToProfile[msg.sender] = profile;
+        s_addressToProfile[tx.origin] = profile;
     }
 
     function updateProfile(string memory _detailsUri) external isProfileOwner{
-        Profile storage profile = s_addressToProfile[msg.sender];
+        Profile storage profile = s_addressToProfile[tx.origin];
         profile.detailsUri = _detailsUri;
         profile.kycStatus = KycStatus.Submitted;
     }
@@ -200,10 +212,10 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     function enrollCourse(uint256 _courseId) external isVerifiedProfile {
         uint256 enrollId = s_enrollIds.current();
         Course memory course = s_idToCourse[_courseId];
-        Enroll memory enroll = Enroll(enrollId, _courseId, msg.sender, course.certifier,  CourseStatus.Enroll);
+        Enroll memory enroll = Enroll(enrollId, _courseId, tx.origin, course.certifier,  CourseStatus.Enroll);
         s_idToEnroll[enrollId] = enroll;
-        s_profileToCourses[msg.sender].push(course);
-        s_profileToEnrolls[msg.sender].push(enroll);
+        s_profileToCourses[tx.origin].push(course);
+        s_profileToEnrolls[tx.origin].push(enroll);
         s_enrollIds.increment();
     }
 

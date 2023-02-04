@@ -23,6 +23,10 @@ contract CertAdmin is CertDatabaseModel{
         return s_adminDb.getOwner();
     }
 
+    function isVerifierRole(address _verifier) external returns(bool){
+        return s_adminDb.isVerifierRole(_verifier);
+    }
+
     function enableAsVerifier(address _verifier) external {
         s_adminDb.addVerifier(_verifier);
     }

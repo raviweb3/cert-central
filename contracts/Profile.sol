@@ -26,7 +26,7 @@ contract Profile is CertDatabaseModel {
     }
 
     function getProfile() external view returns (Profile memory, Certificate[] memory){
-        return commonDb.getProfile(msg.sender);
+        return commonDb.getProfile(tx.origin);
     }
 
     function enrollCourse(uint256 _courseId) external{
@@ -34,7 +34,7 @@ contract Profile is CertDatabaseModel {
     }
 
     function getEnrollments() external view returns(Enroll[] memory){
-        return commonDb.getProfileEnrollments(msg.sender);
+        return commonDb.getProfileEnrollments(tx.origin);
     }
 
     function getCertificate(uint256 _certificateId) external view returns(Certificate memory) {

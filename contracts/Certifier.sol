@@ -75,7 +75,7 @@ contract Certifier is CertDatabaseModel {
             if(enrolls[i].profile == _profile){
                 Enroll memory enroll = enrolls[i];  
                 uint256 tokeId = certificateNFT.certify(_profile, _tokenUri);
-                Certificate memory certificate = Certificate(enroll.id, msg.sender, _profile, course.name, _tokenUri, block.timestamp,tokeId);
+                Certificate memory certificate = Certificate(enroll.id, tx.origin, _profile, course.name, _tokenUri, block.timestamp,tokeId);
                 certificateId = certifierDb.addCertificate(certificate);
             }
         }
