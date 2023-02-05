@@ -50,3 +50,6 @@ So how do we solve the issue with centralised storage?
 
 ## Feature Debt
 
+
+## Showcase
+https://ethglobal.com/showcase/certcentral-afamy
