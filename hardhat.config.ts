@@ -6,8 +6,12 @@ require('dotenv').config();
 
 const config: HardhatUserConfig = {
   solidity: '0.8.17',
-  defaultNetwork: 'wallaby',
+  defaultNetwork: 'hyperspace',
   networks: {
+    hyperspace: {
+      url: "https://api.hyperspace.node.glif.io/rpc/v1",
+      accounts: [process.env.WALLET_PRIVATE_KEY ?? 'undefined'],
+    },
     wallaby: {
       url: 'https://wallaby.node.glif.io/rpc/v0',
       chainId: 31415,
@@ -36,6 +40,11 @@ module.exports = {
     wallaby: {
       url: 'https://wallaby.node.glif.io/rpc/v0',
       chainId: 31415,
+      accounts: [process.env.WALLET_PRIVATE_KEY ?? 'undefined'],
+    },
+    hyperspace: {
+      url: "https://api.hyperspace.node.glif.io/rpc/v1",
+      chainId: 3141,
       accounts: [process.env.WALLET_PRIVATE_KEY ?? 'undefined'],
     },
   },
