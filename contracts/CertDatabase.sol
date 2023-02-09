@@ -28,11 +28,12 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     Profile[] public s_profiles;
 
     // Course
+    mapping(uint256 => Course) public s_idToCourse;
     mapping(address => Course[]) public s_certifierToCourses;
     mapping(address => Course[]) public s_profileToCourses;
     Course[] public s_courses;
     
-    mapping(uint256 => Course) public s_idToCourse;
+    
     Counters.Counter public s_courseIds;
 
     // Enroll
@@ -44,10 +45,9 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     
     // Certificate
     mapping(uint256 => Certificate) public s_idToCertificate;
-
     mapping(address => Certificate[]) public s_certifierToCertificates;
-
     mapping(address => Certificate[]) public s_profileToCertificates;
+
     Counters.Counter public s_certificateIds;
 
     modifier isOwner(){
@@ -57,10 +57,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     
     modifier isVerifier(){
        // console.log(s_verifiers[0]);
-         console.log("in is verifier");
-         console.log(tx.origin);
-        console.log(s_addressToVerifier[tx.origin]);
-        require(s_addressToVerifier[tx.origin],"You must be a verifier");
+       require(s_addressToVerifier[tx.origin],"You must be a verifier");
         _;
     }
 
@@ -92,18 +89,13 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
   
     function isVerifierRole(address _verifier) external view returns(bool){
         bool flag = s_addressToVerifier[_verifier];
-        console.log("isVerifierRole flag");
-        console.log(flag);
         return flag;
     }
 
     /* Admin */
     function addVerifier(address _verifier) external isOwner {
-        console.log("in add verifier");
-        console.log(_verifier);
         s_addressToVerifier[_verifier] = true;
         s_verifiers.push(_verifier);
-        console.log(s_addressToVerifier[_verifier]);
     }
 
     function removeVerifier(address _verifier) external isOwner {
@@ -112,7 +104,6 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
 
 
     function verifyCertifier(address _certifier) external isVerifier {
-        console.log("in verifyCertifier");
         require(s_addressToCertifier[_certifier].owner!=address(0),"Certifier is not registered");
         Certifier storage certifier = s_addressToCertifier[_certifier];
         certifier.verifier = tx.origin;
@@ -151,23 +142,38 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     function updateCourse(uint256 _courseId, string memory _detailsUri,uint256 _fee,
                        uint256 _startedOn,uint256 _completedOn) external isVerifiedCertifer {
         Course storage course =   s_idToCourse[_courseId];
+        require(course.status==CourseStatus.Created,"Cannot update after enrollments");
         course.detailsUri = _detailsUri;
         course.fee = _fee;
         course.startedOn = _startedOn;
         course.completedOn = _completedOn;
+
+        // update for cerifier
+        Course[] storage courses = s_certifierToCourses[course.certifier];
+        for(uint i=0; i < courses.length; i++){
+            if(courses[i].courseId == course.courseId){
+                courses[i].detailsUri = _detailsUri;
+                courses[i].fee = _fee;
+                courses[i].startedOn = _startedOn;
+                courses[i].completedOn = _completedOn;
+            }
+        }
+        
     }
 
     function updateCourseStatus(uint256 _courseId, CourseStatus _status) external isVerifiedCertifer {
         Course storage course = s_idToCourse[_courseId];
         course.status = _status;
+
+        Course[] storage courses = s_certifierToCourses[course.certifier];
+        for(uint i=0; i < courses.length; i++){
+            if(courses[i].courseId == course.courseId){
+               courses[i].status = _status;
+            }
+        }
     }
 
     function enrollProfile(uint256 _courseId, address _profile) external isVerifiedCertifer {
-        console.log("in enroll profile");
-        console.log(_courseId);
-        console.log(_profile);
-        console.log(s_addressToProfile[_profile].owner);
-
         require(s_addressToProfile[_profile].owner!=address(0),"Profile should be registered");
         uint256 enrollId = s_enrollIds.current();
         Course memory course = s_idToCourse[_courseId];
@@ -203,8 +209,6 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
             
     /* Profle */    
     function addProfile(address _profile, string memory _name, string memory _email,string memory _detailsUri) external{
-        console.log("add profile");
-        console.log(_profile);
         Profile memory profile = s_addressToProfile[_profile];
         profile.owner = _profile;
         profile.name = _name;

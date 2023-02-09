@@ -86,20 +86,26 @@ describe("CertCentral Testing Suite", function () {
         expect(courses[0].status).to.be.equals(0);
       });
 
-      it("Enable Certifier Course", async function(){
+      it("Enrolling started for Certifier Course", async function(){
         const { certifier, certAdmin, certifier1Acc, verifier1Acc } = references;
         let courses = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(courses[0].status).to.be.equals(0);
         console.log(courses[0].status);
         await certifier.connect(certifier1Acc).updateCourseStatus(0, 1);
-        courses = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
-        console.log(courses);
-       /* console.log("enable enrollments" + courses[0].status)
-        await certifier.connect(certifier1Acc).updateCourseStatus(0, 1);
+        let coursesAfterUpdate = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
+        expect(coursesAfterUpdate[0].status).to.be.equals(1);
+        console.log("Course " +  + coursesAfterUpdate[0].status)
+      });
+
+      it("Starting Certifier Course", async function(){
+        const { certifier, certAdmin, certifier1Acc, verifier1Acc } = references;
+        let courses = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(courses[0].status).to.be.equals(1);
-        console.log("Course Started" +  + courses[0].status)
+        console.log(courses[0].status);
         await certifier.connect(certifier1Acc).updateCourseStatus(0, 2);
-        expect(courses[0].status).to.be.equals(2);*/
+        let coursesAfterUpdate = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
+        expect(coursesAfterUpdate[0].status).to.be.equals(2);
+        console.log("Course " +  + coursesAfterUpdate[0].status)
 
       });
     });
@@ -130,7 +136,7 @@ describe("CertCentral Testing Suite", function () {
     });
 
     describe("Certifier marking the course as completed", function () {
-      it("Enroll profile in a course", async function(){
+      it("Marking course Completion", async function(){
         const { certifier, certAdmin, certifier1Acc, verifier1Acc, profile, profile1Acc } = references;
         await certifier.connect(certifier1Acc).updateCourseStatus(0,3);
       });
