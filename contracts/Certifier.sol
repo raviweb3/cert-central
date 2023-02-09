@@ -81,15 +81,14 @@ contract Certifier is CertDatabaseModel {
         bool isCertified = false;
         uint256 certificateId = 0;
         for(uint64 i = 0; i < enrolls.length; i++){
-            console.log(enrolls[i].profile);
-            if(enrolls[i].profile == _profile){
-                Enroll memory enroll = enrolls[i];  
-                uint256 tokeId = certificateNFT.certify(_profile, _tokenUri);
-                Certificate memory certificate = Certificate(enroll.id, tx.origin, _profile, course.name, _tokenUri, block.timestamp,tokeId);
+          if(enrolls[i].profile == _profile){
+             Enroll memory enroll = enrolls[i];  
+             uint256 tokeId = certificateNFT.certify(_profile, _tokenUri);
+             Certificate memory certificate = Certificate(enroll.id, tx.origin, _profile, course.name, _tokenUri, block.timestamp,tokeId);
 
-                certificateId = certifierDb.addCertificate(certificate);
-                isCertified = true;
-            }
+             certificateId = certifierDb.addCertificate(certificate);
+             isCertified = true;
+          }
         }
         require(isCertified,"Profile should be enrolled to issue a certificate.");
 

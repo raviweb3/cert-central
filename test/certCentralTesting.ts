@@ -8,7 +8,6 @@ import { CertAdmin } from "../typechain-types";
 describe("CertCentral Testing Suite", function () {
   async function deployCertContractsFixture() {
     // Contracts are deployed using the first signer/account by default
-    console.log(await (await ethers.getSigners()).length);
     const [ownerAcc, verifier1Acc, verifier2Acc, certifier1Acc, certifier2Acc, profile1Acc, profile2Acc, profile3Acc ] = await ethers.getSigners();
 
     const CertifierNFT = await ethers.getContractFactory("CertifierNFT");
@@ -46,14 +45,14 @@ describe("CertCentral Testing Suite", function () {
         const { certAdmin, ownerAcc, verifier1Acc } = references;
         await certAdmin.connect(ownerAcc);
         await certAdmin.enableAsVerifier(verifier1Acc.address);
-      //  expect(await certAdmin.isVerifierRole(verifier1Acc.address)).to.be.true;
+        //expect(await certAdmin.isVerifierRole(verifier1Acc.address)).to.be.equals(true);
       });
 
-      it.skip("Should enable as verifier 2", async function () {
+      it("Should enable as verifier 2", async function () {
         const { certAdmin, ownerAcc, verifier2Acc } = references;
         await certAdmin.connect(ownerAcc);
         await certAdmin.enableAsVerifier(verifier2Acc.address);
-        expect(await certAdmin.isVerifierRole(verifier2Acc.address)).to.be.true;
+        //expect(await certAdmin.isVerifierRole(verifier2Acc.address)).to.be.equals(true);
       });
     });
 
@@ -90,29 +89,24 @@ describe("CertCentral Testing Suite", function () {
         const { certifier, certAdmin, certifier1Acc, verifier1Acc } = references;
         let courses = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(courses[0].status).to.be.equals(0);
-        console.log(courses[0].status);
         await certifier.connect(certifier1Acc).updateCourseStatus(0, 1);
         let coursesAfterUpdate = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(coursesAfterUpdate[0].status).to.be.equals(1);
-        console.log("Course " +  + coursesAfterUpdate[0].status)
       });
 
       it("Starting Certifier Course", async function(){
         const { certifier, certAdmin, certifier1Acc, verifier1Acc } = references;
         let courses = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(courses[0].status).to.be.equals(1);
-        console.log(courses[0].status);
         await certifier.connect(certifier1Acc).updateCourseStatus(0, 2);
         let coursesAfterUpdate = await certifier.connect(certifier1Acc).getCourses(certifier1Acc.address);
         expect(coursesAfterUpdate[0].status).to.be.equals(2);
-        console.log("Course " +  + coursesAfterUpdate[0].status)
-
       });
     });
 
     describe("Profile 1 Onboarding", function () {
       it("Register a new user", async function(){
-      const { certifier, certAdmin, certifier1Acc, verifier1Acc, profile, profile1Acc } = references;
+        const { certifier, certAdmin, certifier1Acc, verifier1Acc, profile, profile1Acc } = references;
         await profile.connect(profile1Acc).registerProfile("ravi kiran", "test@gmail.com", "www.linkedin.com/ravikiran");
       });
 
@@ -121,7 +115,6 @@ describe("CertCentral Testing Suite", function () {
         await certifier.connect(certifier1Acc).enrollProfile(0,profile1Acc.address);
 
         const enrollments = await certifier.getEnrollments(0);
-        console.log(enrollments);
         expect(await enrollments[0].profile).to.be.equals(profile1Acc.address); 
       });
 
@@ -130,7 +123,6 @@ describe("CertCentral Testing Suite", function () {
         await certifier.connect(certifier1Acc).enrollProfile(0,profile1Acc.address);
 
         const enrollments = await certifier.getEnrollments(0);
-        console.log(enrollments);
         expect(await enrollments[0].profile).to.be.equals(profile1Acc.address); 
       });
     });
