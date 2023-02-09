@@ -25,12 +25,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
     log(`CertDatabase deployed at ${certDatabase.address}`)
 
-    if (
+    /*if (
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
         await verify(certDatabase.address, [])
-    }
+    }*/
 }
 
 module.exports.tags = ["all", "certdatabase"]

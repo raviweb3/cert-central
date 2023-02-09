@@ -28,12 +28,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
     log(`CertCommon deployed at ${certCommon.address}`)
 
-    if (
+    /*if (
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
         await verify(certCommon.address, [])
-    }
+    }*/
 }
 
 module.exports.tags = ["all", "certCommon"]

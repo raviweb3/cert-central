@@ -31,12 +31,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
     log(`Certifier deployed at ${certifier.address}`)
 
-    if (
+    /*if (
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
         await verify(certifier.address, [])
-    }
+    }*/
 }
 
 module.exports.tags = ["all", "certifier"]

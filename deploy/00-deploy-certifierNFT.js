@@ -25,12 +25,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
     log(`certifierNFT deployed at ${certifierNFT.address}`)
 
-    if (
+   /* if (
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
         await verify(certifierNFT.address, [])
-    }
+    }*/
 }
 
 module.exports.tags = ["all", "certifiernft"]

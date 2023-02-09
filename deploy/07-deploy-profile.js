@@ -29,12 +29,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     })
     log(`Profile deployed at ${profile.address}`)
 
-    if (
+    /*if (
         !developmentChains.includes(network.name) &&
         process.env.ETHERSCAN_API_KEY
     ) {
         await verify(profile.address, [])
-    }
+    }*/
 }
 
 module.exports.tags = ["all", "profile"]
