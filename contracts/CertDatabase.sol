@@ -92,6 +92,8 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
   
     function isVerifierRole(address _verifier) external view returns(bool){
         bool flag = s_addressToVerifier[_verifier];
+        console.log("isVerifierRole flag");
+        console.log(flag);
         return flag;
     }
 
@@ -111,7 +113,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
 
     function verifyCertifier(address _certifier) external isVerifier {
         console.log("in verifyCertifier");
-
+        require(s_addressToCertifier[_certifier].owner!=address(0),"Certifier is not registered");
         Certifier storage certifier = s_addressToCertifier[_certifier];
         certifier.verifier = tx.origin;
         certifier.kycStatus = KycStatus.Verified;
@@ -125,24 +127,24 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     }
 
     /* Certifier */
-    function addCertifier(string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external {
-        Certifier storage certifier = s_addressToCertifier[tx.origin];
+    function addCertifier(address _certifier, string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external {
+        Certifier storage certifier = s_addressToCertifier[_certifier];
         certifier.name = _name;
         certifier.entityType = _entityType;
         certifier.domain = _domain;
         certifier.detailsUri = _detailsUri;
-        certifier.owner = tx.origin;
+        certifier.owner = _certifier;
         certifier.kycStatus = KycStatus.Submitted;
 
-        s_addressToCertifier[tx.origin] = certifier;
+        s_addressToCertifier[_certifier] = certifier;
     }
 
-    function addCourse(string memory _name,string memory _description,string memory _detailsUri, 
+    function addCourse(address _certifier, string memory _name,string memory _description,string memory _detailsUri, 
                   string[] memory _skills,uint256 _fee,uint256 _startedOn,uint256 _completedOn) external isVerifiedCertifer{
         uint256 courseId = s_courseIds.current();
-        Course memory course =  Course(courseId,tx.origin, _name,_description, _detailsUri,_skills,_fee,_startedOn,_completedOn,CourseStatus.Created);
+        Course memory course =  Course(courseId,_certifier, _name,_description, _detailsUri,_skills,_fee,_startedOn,_completedOn,CourseStatus.Created);
         s_idToCourse[courseId] = course;
-        s_certifierToCourses[tx.origin].push(course);
+        s_certifierToCourses[_certifier].push(course);
         s_courseIds.increment();
     }
 
@@ -156,11 +158,17 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     }
 
     function updateCourseStatus(uint256 _courseId, CourseStatus _status) external isVerifiedCertifer {
-        Course storage course =   s_idToCourse[_courseId];
+        Course storage course = s_idToCourse[_courseId];
         course.status = _status;
     }
 
     function enrollProfile(uint256 _courseId, address _profile) external isVerifiedCertifer {
+        console.log("in enroll profile");
+        console.log(_courseId);
+        console.log(_profile);
+        console.log(s_addressToProfile[_profile].owner);
+
+        require(s_addressToProfile[_profile].owner!=address(0),"Profile should be registered");
         uint256 enrollId = s_enrollIds.current();
         Course memory course = s_idToCourse[_courseId];
         Enroll memory enroll = Enroll(enrollId, _courseId, _profile, course.certifier,  CourseStatus.Enroll);
@@ -194,28 +202,31 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
     }
             
     /* Profle */    
-    function addProfile(string memory _name, string memory _email,string memory _detailsUri) external{
-        Profile memory profile = s_addressToProfile[tx.origin];
+    function addProfile(address _profile, string memory _name, string memory _email,string memory _detailsUri) external{
+        console.log("add profile");
+        console.log(_profile);
+        Profile memory profile = s_addressToProfile[_profile];
+        profile.owner = _profile;
         profile.name = _name;
         profile.email = _email;
         profile.detailsUri = _detailsUri;
         profile.kycStatus = KycStatus.Submitted;
-        s_addressToProfile[tx.origin] = profile;
+        s_addressToProfile[_profile] = profile;
     }
 
-    function updateProfile(string memory _detailsUri) external isProfileOwner{
-        Profile storage profile = s_addressToProfile[tx.origin];
+    function updateProfile(address _profile, string memory _detailsUri) external isProfileOwner{
+        Profile storage profile = s_addressToProfile[_profile];
         profile.detailsUri = _detailsUri;
         profile.kycStatus = KycStatus.Submitted;
     }
 
-    function enrollCourse(uint256 _courseId) external isVerifiedProfile {
+    function enrollCourse(address _profile, uint256 _courseId) external isVerifiedProfile {
         uint256 enrollId = s_enrollIds.current();
         Course memory course = s_idToCourse[_courseId];
-        Enroll memory enroll = Enroll(enrollId, _courseId, tx.origin, course.certifier,  CourseStatus.Enroll);
+        Enroll memory enroll = Enroll(enrollId, _courseId, _profile, course.certifier,  CourseStatus.Enroll);
         s_idToEnroll[enrollId] = enroll;
-        s_profileToCourses[tx.origin].push(course);
-        s_profileToEnrolls[tx.origin].push(enroll);
+        s_profileToCourses[_profile].push(course);
+        s_profileToEnrolls[_profile].push(enroll);
         s_enrollIds.increment();
     }
 
@@ -261,7 +272,7 @@ contract CertDatabase is ICertifierDB, IProfileDB, IAdminDB {
         return s_profiles;
     }            
     
-    function getProfile(address _profile) external view isVerifiedCertifer returns (Profile memory ,Certificate[] memory) {
+    function getProfile(address _profile) external view returns (Profile memory ,Certificate[] memory) {
        Profile memory profile = s_addressToProfile[_profile];
        Certificate[] memory certificates = s_profileToCertificates[_profile];
        return (profile, certificates);

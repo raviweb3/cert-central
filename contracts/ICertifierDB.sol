@@ -5,9 +5,9 @@ import "../node_modules/hardhat/console.sol";
 import "./CertDatabaseModel.sol";
 
 interface ICertifierDB is CertDatabaseModel {
-     function addCertifier(string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external;
+     function addCertifier(address _certifier, string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external;
     
-     function addCourse(string memory _name,string memory _description,string memory _detailsUri, 
+     function addCourse(address _certifier, string memory _name,string memory _description,string memory _detailsUri, 
                   string[] memory _skills,uint256 _fee,uint256 _startedOn,uint256 _completedOn) external;
 
      function updateCourse(uint256 _courseId, string memory _detailsUri,uint256 _fee,

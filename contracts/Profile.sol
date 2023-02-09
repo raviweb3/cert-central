@@ -18,19 +18,19 @@ contract Profile is CertDatabaseModel {
 
     /* Profle */    
     function registerProfile(string memory _name, string memory _email,string memory _detailsUri) external{
-        profileDb.addProfile(_name,_email,_detailsUri);
+        profileDb.addProfile(msg.sender, _name,_email,_detailsUri);
     }
 
     function updateProfile(string memory _detailsUri) external{
-        profileDb.updateProfile(_detailsUri);
+        profileDb.updateProfile(msg.sender,_detailsUri);
     }
 
-    function getProfile() external view returns (Profile memory, Certificate[] memory){
-        return commonDb.getProfile(tx.origin);
+    function getProfile(address _profile) external view returns (Profile memory, Certificate[] memory){
+        return commonDb.getProfile(_profile);
     }
 
     function enrollCourse(uint256 _courseId) external{
-        profileDb.enrollCourse(_courseId);    
+        profileDb.enrollCourse(msg.sender,_courseId);    
     }
 
     function getEnrollments() external view returns(Enroll[] memory){

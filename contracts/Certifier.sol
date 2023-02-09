@@ -25,7 +25,7 @@ contract Certifier is CertDatabaseModel {
 
     /* Certifier */
     function registerCertifier(string memory _name, string memory _entityType, string memory _domain,string memory _detailsUri) external{
-        certifierDb.addCertifier(_name, _entityType, _domain,_detailsUri);
+        certifierDb.addCertifier(msg.sender,_name, _entityType, _domain,_detailsUri);
     }
 
     function getCertifier(address _certifier) external view returns (Certifier memory){
@@ -34,6 +34,10 @@ contract Certifier is CertDatabaseModel {
 
     function enrollProfile(uint256 _courseId, address _profile) external{
         certifierDb.enrollProfile(_courseId,_profile);
+    }
+
+    function getEnrollments(uint256 _courseId) external view returns(Enroll[] memory) {
+        return commonDb.getEnrollments(_courseId);
     }
 
     function getEnrollment(uint256 _enrollId) external view returns(Enroll memory) {
@@ -46,7 +50,7 @@ contract Certifier is CertDatabaseModel {
 
     function registerCourse(string memory _name,string memory _description,string memory _detailsUri, 
                             string[] memory _skills,uint256 _fee,uint256 _startedOn,uint256 _completedOn) external{
-        certifierDb.addCourse(_name,_description,_detailsUri,_skills,_fee,_startedOn,_completedOn);
+        certifierDb.addCourse(msg.sender,_name,_description,_detailsUri,_skills,_fee,_startedOn,_completedOn);
     }
 
     function updateCourse(uint256 _courseId, string memory _detailsUri,uint256 _fee,uint256 _startedOn,uint256 _completedOn) external{
@@ -68,21 +72,38 @@ contract Certifier is CertDatabaseModel {
 
     function issueCourseNFT(address _profile,uint256 _courseId, string memory _tokenUri) external returns(bool){
         Course memory course = commonDb.getCourse(_courseId);
+        console.log("in issueCourseNFT");
+        console.log(course.courseId);
+        console.log(course.name);
+      
         // should be completed status
-        require(course.status==CourseStatus.Completed);
+        require(course.status==CourseStatus.Completed,"Course is still ongoing");
         Enroll[] memory enrolls = commonDb.getEnrollments(_courseId);
 
         // Course enrolls are limited
         bool isCertified = false;
         uint256 certificateId = 0;
+        console.log(enrolls.length);
+        console.log(_profile);
         for(uint64 i = 0; i < enrolls.length; i++){
+            console.log(enrolls[i].profile);
             if(enrolls[i].profile == _profile){
                 Enroll memory enroll = enrolls[i];  
+                console.log("enroll id");
+                console.log(enroll.id);
                 uint256 tokeId = certificateNFT.certify(_profile, _tokenUri);
+                console.log("tokeId");
+                console.log(tokeId);
                 Certificate memory certificate = Certificate(enroll.id, tx.origin, _profile, course.name, _tokenUri, block.timestamp,tokeId);
+
                 certificateId = certifierDb.addCertificate(certificate);
+                console.log("certificateId");
+                console.log(certificateId);
+                isCertified = true;
             }
         }
+        require(isCertified,"Profile should be enrolled to issue a certificate.");
+
         // fire event
         return isCertified;
     }

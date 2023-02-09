@@ -5,7 +5,7 @@ import "../node_modules/hardhat/console.sol";
 import "./CertDatabaseModel.sol";
 
 interface IProfileDB is CertDatabaseModel{
-     function addProfile(string memory _name, string memory _email,string memory _detailsUri) external;
-     function updateProfile(string memory _detailsUri) external ;
-     function enrollCourse(uint256 _courseId) external;
+     function addProfile(address profile, string memory _name, string memory _email,string memory _detailsUri) external;
+     function updateProfile(address profile, string memory _detailsUri) external ;
+     function enrollCourse(address profile, uint256 _courseId) external;
 }
