@@ -16,6 +16,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     }
     log("----------------------------------------------------")
     log("Deploying CertificateNFT and waiting for confirmations...")
+    console.log(deployer);
     const certificateNFT = await deploy("CertificateNFT", {
         from: deployer,
         args: [],

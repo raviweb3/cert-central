@@ -48,7 +48,15 @@ module.exports = {
       accounts: [process.env.WALLET_PRIVATE_KEY ?? 'undefined'],
     },
   },
-  solidity: "0.8.17",
+  solidity: {
+    version: "0.8.17",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
+  },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
@@ -60,4 +68,4 @@ module.exports = {
   },
 };
 
-export default config;
+export default config

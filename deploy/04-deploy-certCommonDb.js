@@ -23,6 +23,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         from: deployer,
         args: [certDatabase.address],
         log: true,
+        gasLimit: 3e7,
         // we need to wait if on a live network so we can verify properly
         waitConfirmations: network.config.blockConfirmations || 1,
     })
